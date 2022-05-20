@@ -1,11 +1,12 @@
 const fs = require('fs');
 const {stdin, stdout} = process;
+const path = require('path');
 
 function error(e){
   if(e) throw e;
 }
 
-fs.open('text.txt', 'w', e => error(e));
+fs.open(path.join(__dirname, 'text.txt'), 'w', e => error(e));
 
 
 stdout.write('Start your message:\n');
@@ -20,7 +21,7 @@ stdin.on('data', data => {
     process.exit();
   }
 
-  fs.appendFile('text.txt', text + '\n', e => error(e));
+  fs.appendFile(path.join(__dirname, 'text.txt'), text + '\n', e => error(e));
 
 });
 
