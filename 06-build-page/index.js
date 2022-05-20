@@ -15,29 +15,40 @@ function error(e){
     process.stdout.write('Error: ' + e);
   }
 }
-async function deepClean(dir){
-  await fs.readdir(dir, {withFileTypes: true}, (e, files) => {
-    error(e);
+// async function deepClean(dir){
+//   await fs.readdir(dir, {withFileTypes: true}, (e, files) => {
+//     error(e);
     
-    if(files){
-      (async () => {
-        try {
-          for await (let el of files){
-            if(el.isFile()){
-              fs.unlink(path.join(dir, el.name), e => error(e));
-            } else if(el.isDirectory()){
-              deepClean(path.join(dir, el.name));
-              fsPromises.rm(path.join(dir, el.name), { recursive: true }, e => error(e));
-            }
-          }
-        } catch (e){
-          console.log(e);
-        }
-      })();
-    }
+//     if(files){
+//       (async () => {
+//         try {
+//           for await (let el of files){
+//             if(el.isFile()){
+//               fs.unlink(path.join(dir, el.name), e => error(e));
+//               console.log('delete!', el);
+//             } else if(el.isDirectory()){
+//               deepClean(path.join(dir, el.name));
+//               await fsPromises.rm(path.join(dir, el.name), { recursive: true }, e => error(e));
+//               console.log('delete ', el);
+//             }
+//           }
+//         } catch (e){
+//           console.log(e);
+//         }
+//       })();
+//     }
 
-  });
+//   });
+// }
+
+async function testDelete(){
+  try {
+    await fsPromises.rm(path.join(__dirname, 'project-dist'), {recursive: true});
+  } catch (e){
+    console.log(e, 'testDelete');
+  }
 }
+
 async function copyFiles(dirInput, dirOutput, files){
   try {
     for await (let item of files){
@@ -85,6 +96,7 @@ async function copyDir(){
 
     // Create folder
 
+
     await fs.mkdir(dirCopy, {recursive : true}, error => {
       if(error) throw error;
     });
@@ -111,7 +123,9 @@ async function copyDir(){
     // создание папки
     await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true}, e => error(e));
     
-    await deepClean(path.join(__dirname, 'project-dist'));
+    await testDelete();
+
+    await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true}, e => error(e));
 
     await fs.readdir(path.join(__dirname, 'components'), {withFileTypes: true}, (e, files)  => {
       error(e);
