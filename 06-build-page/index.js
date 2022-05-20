@@ -14,6 +14,27 @@ function error(e){
     process.stdout.write('Error: ' + e);
   }
 }
+async function clearFolder(dir, el){
+  // if(el.isFile()){
+  //   await fs.unlink(path.join(dir, el.name), e => error(e));
+  // } else {
+  //   let nextDir = path.join(dir, el.name);
+  //   let items;
+  //   await fs.readdir(nextDir, {withFileTypes: true}, (e, files) => {
+  //     error(e);
+  //     items = files;
+  //   });
+  //   if(!items){
+  //     console.log(items, ' - items');
+  //     await fs.rmdir(dir, e => error(e));
+  //     return;
+  //   }
+  //   for await (let el of items){
+  //     clearFolder(nextDir, el);
+  //   }
+  //   await fs.rmdir(nextDir);
+  // }
+}
 
 (async () => {
   try{
@@ -22,9 +43,19 @@ function error(e){
     let templates = {};        // шаблоны в components
 
     // создание папки
-    await fs.promises.mkdir(path.join(__dirname, 'project-dist'), {recursive: true}, e => error(e));
+    await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true}, e => error(e));
 
-    // 
+    // очищение папки если она была забита
+    let oldItems;
+    await fs.readdir(path.join(__dirname, 'project-dist'), {withFileTypes: true}, (e, files) => {
+      error(e);
+      for (let el of files){
+        clearFolder(path.join(__dirname, 'project-dist'), el);
+      }
+      
+    });
+
+
     
 
     await fs.readdir(path.join(__dirname, 'components'), {withFileTypes: true}, (e, files)  => {
@@ -64,9 +95,7 @@ function error(e){
       }
       // запись шаблона в файл index.html в папке project-dist
       fs.open(path.join(__dirname, 'project-dist', 'index.html'), 'w', e => error(e));
-      console.log(template);
       fs.writeFile(path.join(__dirname, 'project-dist', 'index.html'), template, e => error(e));
-      console.log(template);
     });
   } catch (e){
     error(e);
@@ -126,3 +155,64 @@ async function start(){
   }
 }
 start();
+
+// копирование из 4 задания
+
+// async function deleted(pathItems, faceFiles){
+//   try{
+//     for await(let item of faceFiles){
+//       fs.unlink(path.join(pathItems, item), err => {
+//         if(err) throw err;
+//       });
+//     }
+//   } catch (e){
+//     process.stdout.write(e);
+//   }
+// }
+
+async function searchItems(dir, dirCopy){
+  fs.readdir(dir, {withFileTypes: true,}, (err, files) => {
+    if(err) throw err;
+    let arch = dir;
+    for (let file of files){
+      if(file.isDirectory()) {
+        // создаем копию папки
+        fs.mkdir(path.join(dirCopy, file.name), e => error(e));
+        let copy = path.join(dirCopy, file.name);
+        searchItems(path.join(arch, file.name), copy);
+      } else {
+        const filename = path.parse(path.join(__dirname, file.name));
+        let stream = fs.createReadStream(path.join(dir, filename.base));
+        let output = fs.createWriteStream(path.join(dirCopy, filename.base));
+        stream.pipe(output);
+      }
+    }
+  });
+}
+
+async function copyDir(){
+  try{
+    const dir = path.join(__dirname, 'assets');
+    const dirCopy = path.join(__dirname, 'project-dist', 'assets');
+
+    // Create folder
+
+    await fs.mkdir(dirCopy, {recursive : true}, error => {
+      if(error) throw error;
+    });
+
+    // Delete files-copy
+
+    // await fs.readdir(dirCopy, {withFileTypes: true,}, (err, faceFiles) => {
+    //   if(err) throw err;
+    //   //deleted(dirCopy, faceFiles);
+    // });
+
+    
+    await searchItems(dir, dirCopy);
+  } catch (e){
+    process.stdout.write(e);
+  }
+}
+
+copyDir();
