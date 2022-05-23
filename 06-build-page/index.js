@@ -1,45 +1,14 @@
-// 1. Импорт всех требуемых модулей
-// 2. Прочтение и сохранение в переменной файла-шаблона
-// 3. Нахождение всех имён тегов в файле шаблона
-// 4. Замена шаблонных тегов содержимым файлов-компонентов
-// 5. Запись изменённого шаблона в файл **index.html** в папке **project-dist**
-// 6. Использовать скрипт написанный в задании **05-merge-styles** для создания файла **style.css**
-// 7. Использовать скрипт из задания **04-copy-directory** для переноса папки **assets** в папку project-dist 
-
 const fs = require('fs');
 const path = require('path');
 const fsPromises = require('fs/promises');
+
+/**********Functions ********************************************************************************************/ 
 
 function error(e){
   if(e){
     process.stdout.write('Error: ' + e);
   }
 }
-// async function deepClean(dir){
-//   await fs.readdir(dir, {withFileTypes: true}, (e, files) => {
-//     error(e);
-    
-//     if(files){
-//       (async () => {
-//         try {
-//           for await (let el of files){
-//             if(el.isFile()){
-//               fs.unlink(path.join(dir, el.name), e => error(e));
-//               console.log('delete!', el);
-//             } else if(el.isDirectory()){
-//               deepClean(path.join(dir, el.name));
-//               await fsPromises.rm(path.join(dir, el.name), { recursive: true }, e => error(e));
-//               console.log('delete ', el);
-//             }
-//           }
-//         } catch (e){
-//           console.log(e);
-//         }
-//       })();
-//     }
-
-//   });
-// }
 
 async function testDelete(){
   try {
@@ -114,11 +83,14 @@ async function copyDir(){
     process.stdout.write(e);
   }
 }
+
+/**********Start script ********************************************************************************************/ 
+
 (async () => {
   try {
     let templateItems;    // список найденых шаблонов в template.html
     let template = '';    // сам template.html в текстовом представлении
-    let templates = {};        // шаблоны в components
+    let templates = {};   // шаблоны в components
 
     // создание папки
     await fs.mkdir(path.join(__dirname, 'project-dist'), {recursive: true}, e => error(e));
@@ -191,23 +163,7 @@ async function copyDir(){
       
     });
 
-    // копирование из 4 задания
-
-    // async function deleted(pathItems, faceFiles){
-    //   try{
-    //     for await(let item of faceFiles){
-    //       fs.unlink(path.join(pathItems, item), err => {
-    //         if(err) throw err;
-    //       });
-    //     }
-    //   } catch (e){
-    //     process.stdout.write(e);
-    //   }
-    // }
-
-    
-
-    
+    // копирование папок
 
     await copyDir();
   } catch(e){
